@@ -128,6 +128,8 @@ resource "azurerm_role_assignment" "vault_storage_access" {
   principal_id         = azurerm_data_protection_backup_vault.vault.identity[0].principal_id
 }
 
+
+
 # --- Backup Instance (The link that enables the backup) ---
 resource "azurerm_data_protection_backup_instance_kubernetes_cluster" "main" {
   name                         = "aks-backup-instance"
