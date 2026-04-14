@@ -24,15 +24,15 @@ variable "cluster_name"        { default = "aks-cluster-maindamu" }
 variable "storage_account_name"{ default = "staksbackupprod140" }
 
 # --- Infrastructure ---
-resource "azurerm_resource_group" "main" {
+resource "azurerm_resource_group" "main1" {
   name     = var.resource_group_name
   location = var.location
 }
 
 resource "azurerm_storage_account" "backups" {
   name                     = var.storage_account_name
-  resource_group_name      = azurerm_resource_group.main.name
-  location                 = azurerm_resource_group.main.location
+  resource_group_name      = azurerm_resource_group.main1.name
+  location                 = azurerm_resource_group.main1.location
   account_tier             = "Standard"
   account_replication_type = "LRS"
 }
@@ -44,10 +44,10 @@ resource "azurerm_storage_container" "backups" {
 }
 
 # --- AKS Cluster ---
-resource "azurerm_kubernetes_cluster" "main" {
+resource "azurerm_kubernetes_cluster" "main1" {
   name                = var.cluster_name
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
+  location            = azurerm_resource_group.main1.location
+  resource_group_name = azurerm_resource_group.main1.name
   dns_prefix          = "aks-backup-dns"
 
   default_node_pool {
@@ -62,8 +62,8 @@ resource "azurerm_kubernetes_cluster" "main" {
 # --- Backup Vault & Policy ---
 resource "azurerm_data_protection_backup_vault" "vault" {
   name                = "aks-backup-vault"
-  resource_group_name = azurerm_resource_group.main.name
-  location            = azurerm_resource_group.main.location
+  resource_group_name = azurerm_resource_group.main1.name
+  location            = azurerm_resource_group.main1.location
   datastore_type      = "VaultStore"
   redundancy          = "LocallyRedundant"
   identity { type = "SystemAssigned" }
@@ -71,7 +71,7 @@ resource "azurerm_data_protection_backup_vault" "vault" {
 
 resource "azurerm_data_protection_backup_policy_kubernetes_cluster" "policy" {
   name                = "aks-backup-policy"
-  resource_group_name = azurerm_resource_group.main.name
+  resource_group_name = azurerm_resource_group.main1.name
   vault_name          = azurerm_data_protection_backup_vault.vault.name
 
   backup_repeating_time_intervals = ["R/2024-01-01T02:00:00+00:00/PT4H"]
@@ -104,7 +104,7 @@ resource "azurerm_kubernetes_cluster_extension" "aks_backup" {
 
   configuration_settings = {
     "configuration.backupStorageLocation.bucket"                = azurerm_storage_container.backups.name
-    "configuration.backupStorageLocation.config.resourceGroup"  = azurerm_resource_group.main.name
+    "configuration.backupStorageLocation.config.resourceGroup"  = azurerm_resource_group.main1.name
     "configuration.backupStorageLocation.config.storageAccount" = azurerm_storage_account.backups.name
     "configuration.backupStorageLocation.config.subscriptionId" = data.azurerm_subscription.current.subscription_id
     "configuration.backupStorageLocation.config.tenantId"       = data.azurerm_subscription.current.tenant_id
@@ -131,9 +131,9 @@ resource "azurerm_role_assignment" "vault_storage_access" {
 # --- Backup Instance (The link that enables the backup) ---
 resource "azurerm_data_protection_backup_instance_kubernetes_cluster" "main" {
   name                         = "aks-backup-instance"
-  location                     = azurerm_resource_group.main.location
+  location                     = azurerm_resource_group.main1.location
   vault_id                     = azurerm_data_protection_backup_vault.vault.id
-  kubernetes_cluster_id        = azurerm_kubernetes_cluster.main.id
+  kubernetes_cluster_id        = azurerm_kubernetes_cluster.main1.id
   backup_policy_id             = azurerm_data_protection_backup_policy_kubernetes_cluster.policy.id
   snapshot_resource_group_name = "${var.resource_group_name}-snapshots"
 
