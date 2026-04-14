@@ -99,7 +99,7 @@ resource "azurerm_data_protection_backup_policy_kubernetes_cluster" "policy" {
 # --- Extension & Integration ---
 resource "azurerm_kubernetes_cluster_extension" "aks_backup" {
   name           = "azure-aks-backupextension"
-  cluster_id     = azurerm_kubernetes_cluster.main.id
+  cluster_id     = azurerm_kubernetes_cluster.main1.id
   extension_type = "Microsoft.DataProtection.Kubernetes"
 
   configuration_settings = {
@@ -114,7 +114,7 @@ resource "azurerm_kubernetes_cluster_extension" "aks_backup" {
 }
 
 resource "azurerm_kubernetes_cluster_trusted_access_role_binding" "aks_backup_binding" {
-  kubernetes_cluster_id = azurerm_kubernetes_cluster.main.id
+  kubernetes_cluster_id = azurerm_kubernetes_cluster.main1.id
   #name                  = "aks-backup-trusted-access"  # Error - 25 characters 
   name                  = "aks-backup-binding" 
   roles                 = ["Microsoft.DataProtection/backupVaults/backup-operator"]
@@ -157,7 +157,7 @@ resource "azurerm_data_protection_backup_instance_kubernetes_cluster" "main" {
 
 # --- Outputs ---
 output "kube_config" {
-  value     = azurerm_kubernetes_cluster.main.kube_config_raw
+  value     = azurerm_kubernetes_cluster.main1.kube_config_raw
   sensitive = true
 }
 
