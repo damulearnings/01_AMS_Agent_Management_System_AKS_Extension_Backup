@@ -19,7 +19,7 @@ data "azurerm_subscription" "current" {}
 
 # --- Variables ---
 variable "resource_group_name" { default = "rg-aks-backup-prod" }
-variable "location"            { default = "eastus2" }
+variable "location"            { default = "westus2" }
 variable "cluster_name"        { default = "aks-cluster-maindamu" }
 variable "storage_account_name"{ default = "staksbackupprod140" }
 
@@ -169,17 +169,17 @@ data "azurerm_client_config" "current" {}
 data "azurerm_subscription" "primary" {}
 
 # 3. Create the Custom Role (Least Privilege)
-resource "azurerm_role_definition" "terraform_rbac_admin" {
-  name        = "Terraform-RBAC-Administrator"  #Terraform-Contributor
-  scope       = data.azurerm_subscription.primary.id
-  description = "Grants Terraform the ability to assign RBAC roles."
+#resource "azurerm_role_definition" "terraform_rbac_admin" {
+#  name        = "Terraform-RBAC-Administrator"  #Terraform-Contributor
+# scope       = data.azurerm_subscription.primary.id
+#  description = "Grants Terraform the ability to assign RBAC roles."
 
-  permissions {
-    actions = ["Microsoft.Authorization/roleAssignments/write"]
-  }
+#  permissions {
+#    actions = ["Microsoft.Authorization/roleAssignments/write"]
+#  }
 
-  assignable_scopes = [data.azurerm_subscription.primary.id]
-}
+# assignable_scopes = [data.azurerm_subscription.primary.id]
+#}
 
 
 # 4. Assign the Custom Role to the Terraform Service Principal itself
